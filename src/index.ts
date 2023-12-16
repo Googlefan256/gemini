@@ -97,6 +97,8 @@ client.on("messageCreate", async (message) => {
 	if (message.content.startsWith("#")) return;
 	if (message.content.trim() == "clear") {
 		chat = model.startChat();
+		await message.reply("会話をリセットしました。");
+		return;
 	}
 	await pushQueue(
 		message,
