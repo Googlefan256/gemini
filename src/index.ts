@@ -11,7 +11,7 @@ if (!geminiKey) throw new Error("GEMINI_KEY not provided");
 const genAI = new GoogleGenerativeAI(geminiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 const visionModel = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-const chat = model.startChat();
+let chat = model.startChat();
 
 const intents =
 	GatewayIntentBits.GuildMessages |
@@ -95,6 +95,9 @@ client.on("messageCreate", async (message) => {
 		return;
 	if (message.channelId !== aiChannel || !message.inGuild()) return;
 	if (message.content.startsWith("#")) return;
+	if (message.content.trim() == "clear") {
+		chat = model.startChat();
+	}
 	await pushQueue(
 		message,
 		message.content,
