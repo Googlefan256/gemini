@@ -90,7 +90,7 @@ async function pushQueue(
 			}
 			await message.reply(resText);
 		} catch (err: any) {
-			if (err.toString().includes("Response was blocked due to SAFETY")) {
+			if (err.toString().includes("SAFETY")) {
 				await message.reply("規制対象です。");
 			}
 			console.error(err);
