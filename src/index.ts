@@ -77,6 +77,17 @@ async function pushQueue(
 			}));
 			const res = await chatFn([text, ...images]);
 			const resText = res.response.text();
+			if (!resText.length) {
+				await message.reply("返信がありません。");
+				continue;
+			}
+			if (resText.length > 2000) {
+				await message.reply({
+					content: "長文です",
+					files: [{ attachment: Buffer.from(resText), name: "reply.txt" }],
+				});
+				continue;
+			}
 			await message.reply(resText);
 		} catch (err: any) {
 			if (err.toString().includes("Response was blocked due to SAFETY")) {
