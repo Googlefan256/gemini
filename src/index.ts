@@ -47,12 +47,11 @@ async function pushQueue(
 	geminiQueue.push({ text, message, attachments });
 	while (geminiQueue.length) {
 		const { text, message, attachments } = geminiQueue.shift()!;
-		let chatFn = chat.sendMessage.bind(chat);
+		let chatFn = chat.sendMessageStream.bind(chat);
 		if (attachments.length) {
-			chatFn = visionModel.generateContent.bind(visionModel);
+			chatFn = visionModel.generateContentStream.bind(visionModel);
 		}
 		try {
-			await message.channel.sendTyping();
 			const images = (
 				(
 					await Promise.allSettled(
@@ -75,25 +74,38 @@ async function pushQueue(
 					mimeType: x.value.mime,
 				},
 			}));
-			const res = await chatFn([text, ...images]);
-			const resText = res.response.text();
-			if (!resText.length) {
-				await message.reply("返信がありません。");
-				continue;
+			const msg = await message.reply("AIが考え中です...");
+			const result = await chatFn([text, ...images]);
+			let resText = "";
+			for await (const chunk of result.stream) {
+				const chunkText = chunk.text();
+				resText += chunkText;
+				if (resText.length <= 2000) {
+					await msg.edit(resText);
+				}
 			}
 			if (resText.length > 2000) {
-				await message.reply({
+				await msg.edit({
 					content: "長文です",
 					files: [{ attachment: Buffer.from(resText), name: "reply.txt" }],
 				});
 				continue;
 			}
-			await message.reply(resText);
 		} catch (err: any) {
 			if (err.toString().includes("SAFETY")) {
 				await message.reply("規制対象です。");
+				continue;
+			}
+			if (err.toString().includes("OTHER")) {
+				await message.reply("その他の理由により返信できません");
+				continue;
+			}
+			if (err.toString().includes("BLOCKED_REASON_UNSPECIFIED")) {
+				await message.reply("不明な理由によりブロックされました");
+				continue;
 			}
 			console.error(err);
+			await message.reply("その他のエラーが発生しました");
 		}
 	}
 }
