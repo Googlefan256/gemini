@@ -80,9 +80,13 @@ async function pushQueue(
 			for await (const chunk of result.stream) {
 				const chunkText = chunk.text();
 				resText += chunkText;
-				if (resText.length <= 2000) {
+				if (resText.length <= 2000 && resText.length > 0) {
 					await msg.edit(resText);
 				}
+			}
+			if (resText.length == 0) {
+				await msg.edit("AIからの返信がありませんでした");
+				continue;
 			}
 			if (resText.length > 2000) {
 				await msg.edit({
@@ -102,6 +106,10 @@ async function pushQueue(
 			}
 			if (err.toString().includes("BLOCKED_REASON_UNSPECIFIED")) {
 				await message.reply("不明な理由によりブロックされました");
+				continue;
+			}
+			if (err.toString().includes("RECITATION")) {
+				await message.reply("朗読を検知しました???");
 				continue;
 			}
 			console.error(err);
