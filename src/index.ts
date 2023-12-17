@@ -54,6 +54,7 @@ client.on(Events.MessageCreate, async (message) => {
 		message.attachments
 			.filter((x) => x.height)
 			.map((x) => ({ url: x.url, mime: x.contentType || "image/png" })),
+		message.channel.topic?.includes("unsafe") || false,
 	);
 });
 

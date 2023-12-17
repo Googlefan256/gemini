@@ -1,4 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+	GoogleGenerativeAI,
+	HarmBlockThreshold,
+	HarmCategory,
+} from "@google/generative-ai";
 import { evar } from "./var";
 import { request } from "undici";
 
@@ -6,6 +10,24 @@ const genAI = new GoogleGenerativeAI(evar("GEMINI_KEY"));
 export const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 export const visionModel = genAI.getGenerativeModel({
 	model: "gemini-pro-vision",
+});
+const safetySettings = [
+	HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+	HarmCategory.HARM_CATEGORY_HARASSMENT,
+	HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+	HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+	HarmCategory.HARM_CATEGORY_UNSPECIFIED,
+].map((category) => ({
+	category,
+	threshold: HarmBlockThreshold.BLOCK_NONE,
+}));
+export const modelZero = genAI.getGenerativeModel({
+	model: "gemini-pro",
+	safetySettings,
+});
+export const visionModelZero = genAI.getGenerativeModel({
+	model: "gemini-pro-vision",
+	safetySettings,
 });
 
 export async function resolveImages(
