@@ -1,4 +1,10 @@
-import { Client, Collection, GatewayIntentBits, Message } from "discord.js";
+import {
+	ActivityType,
+	Client,
+	Collection,
+	GatewayIntentBits,
+	Message,
+} from "discord.js";
 import { config } from "dotenv";
 import { ChatSession, GoogleGenerativeAI } from "@google/generative-ai";
 import { request } from "undici";
@@ -25,6 +31,14 @@ const client = new Client({
 
 client.once("ready", () => {
 	console.log("Ready as " + trueClient().user.tag);
+	setInterval(() => {
+		trueClient().user.setActivity({
+			name: "AIとお話し中",
+			state: "aichatがトピックに含まれてるチャンネルでメッセージを送信",
+			type: ActivityType.Custom,
+			url: "https://neody.land",
+		});
+	}, 1000 * 60);
 });
 
 const geminiQueues = new Collection<
