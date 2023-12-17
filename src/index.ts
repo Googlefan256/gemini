@@ -1,6 +1,6 @@
 import { Client, Collection, GatewayIntentBits, Message } from "discord.js";
 import { config } from "dotenv";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ChatSession, GoogleGenerativeAI } from "@google/generative-ai";
 import { request } from "undici";
 config();
 
@@ -9,7 +9,6 @@ if (!geminiKey) throw new Error("GEMINI_KEY not provided");
 const genAI = new GoogleGenerativeAI(geminiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 const visionModel = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-let chat = model.startChat();
 
 const intents =
 	GatewayIntentBits.GuildMessages |
@@ -31,11 +30,22 @@ client.once("ready", () => {
 const geminiQueues = new Collection<
 	string,
 	{
-		text: string;
-		message: Message<true>;
-		attachments: { mime: string; url: string }[];
-	}[]
+		chat: ChatSession;
+		messages: {
+			text: string;
+			message: Message<true>;
+			attachments: { mime: string; url: string }[];
+		}[];
+	}
 >();
+
+function resetChat(channelId: string) {
+	if (geminiQueues.has(channelId)) {
+		const q = geminiQueues.get(channelId)!;
+		q.chat = model.startChat();
+		geminiQueues.set(channelId, q);
+	}
+}
 
 async function pushQueue(
 	message: Message<true>,
@@ -43,9 +53,12 @@ async function pushQueue(
 	attachments: { mime: string; url: string }[],
 ) {
 	if (!geminiQueues.has(message.channelId)) {
-		geminiQueues.set(message.channelId, []);
+		geminiQueues.set(message.channelId, {
+			chat: model.startChat(),
+			messages: [],
+		});
 	}
-	const geminiQueue = geminiQueues.get(message.channelId)!;
+	const { chat, messages: geminiQueue } = geminiQueues.get(message.channelId)!;
 	if (geminiQueue.length !== 0) {
 		geminiQueue.push({ text, message, attachments });
 		return;
@@ -134,15 +147,16 @@ client.on("messageCreate", async (message) => {
 		return;
 	if (!("topic" in message.channel) || !message.inGuild()) return;
 	if (!message.channel.topic?.includes("aichat")) return;
-	if (message.content.startsWith("#")) return;
-	if (message.content.trim() == "clear") {
-		chat = model.startChat();
+	const content = message.content.trim();
+	if (content.startsWith("#")) return;
+	if (content == "clear") {
+		resetChat(message.channelId);
 		await message.reply("会話をリセットしました。");
 		return;
 	}
 	await pushQueue(
 		message,
-		message.content,
+		content,
 		message.attachments
 			.filter((x) => x.height)
 			.map((x) => ({ url: x.url, mime: x.contentType || "image/png" })),
