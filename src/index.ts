@@ -1,11 +1,9 @@
-import { Client, GatewayIntentBits, Message } from "discord.js";
+import { Client, Collection, GatewayIntentBits, Message } from "discord.js";
 import { config } from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { request } from "undici";
 config();
 
-const aiChannel = process.env.AI_CHANNEL;
-if (!aiChannel) throw new Error("AI_CHANNEL not provided");
 const geminiKey = process.env.GEMINI_KEY;
 if (!geminiKey) throw new Error("GEMINI_KEY not provided");
 const genAI = new GoogleGenerativeAI(geminiKey);
@@ -30,16 +28,24 @@ client.once("ready", () => {
 	console.log("Ready as " + trueClient().user.tag);
 });
 
-const geminiQueue: {
-	text: string;
-	message: Message<true>;
-	attachments: { mime: string; url: string }[];
-}[] = [];
+const geminiQueues = new Collection<
+	string,
+	{
+		text: string;
+		message: Message<true>;
+		attachments: { mime: string; url: string }[];
+	}[]
+>();
+
 async function pushQueue(
 	message: Message<true>,
 	text: string,
 	attachments: { mime: string; url: string }[],
 ) {
+	if (!geminiQueues.has(message.channelId)) {
+		geminiQueues.set(message.channelId, []);
+	}
+	const geminiQueue = geminiQueues.get(message.channelId)!;
 	if (geminiQueue.length !== 0) {
 		geminiQueue.push({ text, message, attachments });
 		return;
@@ -113,7 +119,9 @@ async function pushQueue(
 				continue;
 			}
 			console.error(err);
-			await message.reply("その他のエラーが発生しました");
+			try {
+				await message.reply("その他のエラーが発生しました");
+			} catch {}
 		}
 	}
 }
@@ -124,7 +132,8 @@ client.on("messageCreate", async (message) => {
 		message.author?.bot
 	)
 		return;
-	if (message.channelId !== aiChannel || !message.inGuild()) return;
+	if (!("topic" in message.channel) || !message.inGuild()) return;
+	if (!message.channel.topic?.includes("aichat")) return;
 	if (message.content.startsWith("#")) return;
 	if (message.content.trim() == "clear") {
 		chat = model.startChat();
