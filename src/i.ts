@@ -13,13 +13,21 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 		switch (i.commandName) {
 			case "help":
 				await helpCommand(i);
+				break;
 			case "ping":
 				await pingCommand(i);
+				break;
 			case "clear":
 				await clearCommand(i);
+				break;
 			case "ask":
 				await askCommand(i);
+				break;
+			default:
+				await i.reply("不明なコマンドです");
+				break;
 		}
+		return;
 	} catch (e) {
 		if (i.replied || i.deferred) {
 			await i.editReply("エラーが発生しました");
