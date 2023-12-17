@@ -18,6 +18,12 @@ const client = new Client({
 client.once(Events.ClientReady, async () => {
 	if (client.user !== null) {
 		console.log("Ready as " + client.user.tag);
+		client.user.setActivity({
+			name: "AIとお話し中",
+			state: "aichatがトピックに含まれてるチャンネルでメッセージを送信",
+			type: ActivityType.Custom,
+			url: "https://neody.land",
+		});
 		setInterval(() => {
 			client.user?.setActivity({
 				name: "AIとお話し中",
