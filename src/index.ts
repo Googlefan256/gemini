@@ -1,159 +1,38 @@
-import {
-	ActivityType,
-	Client,
-	Collection,
-	GatewayIntentBits,
-	Message,
-} from "discord.js";
-import { config } from "dotenv";
-import { ChatSession, GoogleGenerativeAI } from "@google/generative-ai";
-import { request } from "undici";
-config();
-
-const geminiKey = process.env.GEMINI_KEY;
-if (!geminiKey) throw new Error("GEMINI_KEY not provided");
-const genAI = new GoogleGenerativeAI(geminiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-const visionModel = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-
-const intents =
-	GatewayIntentBits.GuildMessages |
-	GatewayIntentBits.Guilds |
-	GatewayIntentBits.MessageContent;
+import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
+import { evar } from "./var";
+import { pushQueue } from "./queue";
+import { onInetraction } from "./i";
+import { commands } from "./command";
 
 const client = new Client({
-	intents,
+	intents:
+		GatewayIntentBits.GuildMessages |
+		GatewayIntentBits.Guilds |
+		GatewayIntentBits.MessageContent,
 	allowedMentions: {
 		parse: [],
 		repliedUser: false,
 	},
 });
 
-client.once("ready", () => {
-	console.log("Ready as " + trueClient().user.tag);
-	setInterval(() => {
-		trueClient().user.setActivity({
-			name: "AIとお話し中",
-			state: "aichatがトピックに含まれてるチャンネルでメッセージを送信",
-			type: ActivityType.Custom,
-			url: "https://neody.land",
-		});
-	}, 1000 * 60);
+client.once(Events.ClientReady, async () => {
+	if (client.user !== null) {
+		console.log("Ready as " + client.user.tag);
+		setInterval(() => {
+			client.user?.setActivity({
+				name: "AIとお話し中",
+				state: "aichatがトピックに含まれてるチャンネルでメッセージを送信",
+				type: ActivityType.Custom,
+				url: "https://neody.land",
+			});
+		}, 1000 * 60);
+	}
+	if (client.application !== null) {
+		await client.application.commands.set(commands);
+	}
 });
 
-const geminiQueues = new Collection<
-	string,
-	{
-		chat: ChatSession;
-		messages: {
-			text: string;
-			message: Message<true>;
-			attachments: { mime: string; url: string }[];
-		}[];
-	}
->();
-
-function resetChat(channelId: string) {
-	if (geminiQueues.has(channelId)) {
-		const q = geminiQueues.get(channelId)!;
-		q.chat = model.startChat();
-		geminiQueues.set(channelId, q);
-	}
-}
-
-async function pushQueue(
-	message: Message<true>,
-	text: string,
-	attachments: { mime: string; url: string }[],
-) {
-	if (!geminiQueues.has(message.channelId)) {
-		geminiQueues.set(message.channelId, {
-			chat: model.startChat(),
-			messages: [],
-		});
-	}
-	const { chat, messages: geminiQueue } = geminiQueues.get(message.channelId)!;
-	if (geminiQueue.length !== 0) {
-		geminiQueue.push({ text, message, attachments });
-		return;
-	}
-	geminiQueue.push({ text, message, attachments });
-	while (geminiQueue.length) {
-		const { text, message, attachments } = geminiQueue.shift()!;
-		let chatFn = chat.sendMessageStream.bind(chat);
-		if (attachments.length) {
-			chatFn = visionModel.generateContentStream.bind(visionModel);
-		}
-		try {
-			const images = (
-				(
-					await Promise.allSettled(
-						attachments.map((y) =>
-							request(y.url)
-								.then((x) => x.body.arrayBuffer())
-								.then((buf) => ({
-									buf,
-									mime: y.mime,
-								})),
-						),
-					)
-				).filter((x) => x.status === "fulfilled") as PromiseFulfilledResult<{
-					buf: ArrayBuffer;
-					mime: string;
-				}>[]
-			).map((x) => ({
-				inlineData: {
-					data: Buffer.from(x.value.buf).toString("base64"),
-					mimeType: x.value.mime,
-				},
-			}));
-			const msg = await message.reply("AIが考え中です...");
-			const result = await chatFn([text, ...images]);
-			let resText = "";
-			for await (const chunk of result.stream) {
-				const chunkText = chunk.text();
-				resText += chunkText;
-				if (resText.length <= 2000 && resText.length > 0) {
-					await msg.edit(resText);
-				}
-			}
-			if (resText.length == 0) {
-				await msg.edit("AIからの返信がありませんでした");
-				continue;
-			}
-			if (resText.length > 2000) {
-				await msg.edit({
-					content: "長文です",
-					files: [{ attachment: Buffer.from(resText), name: "reply.txt" }],
-				});
-				continue;
-			}
-		} catch (err: any) {
-			if (err.toString().includes("SAFETY")) {
-				await message.reply("規制対象です。");
-				continue;
-			}
-			if (err.toString().includes("OTHER")) {
-				await message.reply("その他の理由により返信できません");
-				continue;
-			}
-			if (err.toString().includes("BLOCKED_REASON_UNSPECIFIED")) {
-				await message.reply("不明な理由によりブロックされました");
-				continue;
-			}
-			if (err.toString().includes("RECITATION")) {
-				await message.reply("朗読を検知しました???");
-				continue;
-			}
-			console.error(err);
-			try {
-				await message.reply("その他のエラーが発生しました");
-			} catch {}
-		}
-	}
-}
-
-client.on("messageCreate", async (message) => {
+client.on(Events.MessageCreate, async (message) => {
 	if (
 		(!message.content.length && !message.attachments.size) ||
 		message.author?.bot
@@ -163,11 +42,6 @@ client.on("messageCreate", async (message) => {
 	if (!message.channel.topic?.includes("aichat")) return;
 	const content = message.content.trim();
 	if (content.startsWith("#")) return;
-	if (content == "clear") {
-		resetChat(message.channelId);
-		await message.reply("会話をリセットしました。");
-		return;
-	}
 	await pushQueue(
 		message,
 		content,
@@ -177,10 +51,10 @@ client.on("messageCreate", async (message) => {
 	);
 });
 
-const token = process.env.DISCORD_TOKEN;
-if (!token) throw new Error("DISCORD_TOKEN not provided");
-client.login(token);
+client.on(Events.InteractionCreate, async (i) => {
+	if (i.isChatInputCommand()) {
+		await onInetraction(i);
+	}
+});
 
-function trueClient() {
-	return client as Client<true>;
-}
+client.login(evar("DISCORD_TOKEN"));
