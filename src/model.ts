@@ -24,10 +24,16 @@ const safetySettings = [
 export const modelZero = genAI.getGenerativeModel({
 	model: "gemini-pro",
 	safetySettings,
+	generationConfig: {
+		temperature: 0,
+	},
 });
 export const visionModelZero = genAI.getGenerativeModel({
 	model: "gemini-pro-vision",
 	safetySettings,
+	generationConfig: {
+		temperature: 0,
+	},
 });
 
 export async function resolveImages(
