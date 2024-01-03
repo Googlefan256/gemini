@@ -33,9 +33,7 @@ client.once(Events.ClientReady, async () => {
 			});
 		}, 1000 * 60);
 	}
-	if (client.application !== null) {
-		await client.application.commands.set(commands);
-	}
+	await client.application!.commands.set(commands);
 });
 
 client.on(Events.MessageCreate, async (message) => {
