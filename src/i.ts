@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
+import { imagine } from "./imagine";
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {
@@ -22,6 +23,9 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 				break;
 			case "ask":
 				await askCommand(i);
+				break;
+			case "imagine":
+				await imagineCommand(i);
 				break;
 			default:
 				await i.reply("不明なコマンドです");
@@ -111,4 +115,14 @@ async function askCommand(i: ChatInputCommandInteraction) {
 		return;
 	}
 	await i.editReply(resText);
+}
+
+async function imagineCommand(i: ChatInputCommandInteraction) {
+	const text = i.options.getString("text", true);
+	await i.deferReply();
+	const arbuf = await imagine(text);
+	const buf = Buffer.from(arbuf);
+	await i.editReply({
+		files: [{ attachment: buf, name: "imagine.png" }],
+	});
 }

@@ -23,4 +23,10 @@ export const commands = [
 				.setDescription("あなたにしか見えなくします")
 				.setRequired(false),
 		),
+	new SlashCommandBuilder()
+		.setName("imagine")
+		.setDescription("画像を生成します")
+		.addStringOption((x) =>
+			x.setName("text").setDescription("テキスト").setRequired(true),
+		),
 ];
