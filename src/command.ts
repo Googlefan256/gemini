@@ -28,14 +28,14 @@ export const commands = [
 		.setDescription("画像を生成します")
 		.addStringOption((x) =>
 			x.setName("text").setDescription("テキスト").setRequired(true),
+		)
+		.addStringOption((x) =>
+			x.setName("negative").setDescription("ネガティブ").setRequired(false),
 		),
 	new SlashCommandBuilder()
 		.setName("music")
 		.setDescription("音楽を生成します")
 		.addStringOption((x) =>
 			x.setName("text").setDescription("テキスト").setRequired(true),
-		)
-		.addStringOption((x) =>
-			x.setName("negative").setDescription("ネガティブ").setRequired(false),
 		),
 ];
