@@ -33,6 +33,7 @@ client.once(Events.ClientReady, async () => {
 			});
 		}, 1000 * 60);
 	}
+	await client.application!.commands.set([]);
 	await client.application!.commands.set(commands);
 });
 
