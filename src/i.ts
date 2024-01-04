@@ -123,8 +123,9 @@ async function askCommand(i: ChatInputCommandInteraction) {
 
 async function imagineCommand(i: ChatInputCommandInteraction) {
 	const text = i.options.getString("text", true);
+	const negative = i.options.getString("negative", false);
 	await i.deferReply();
-	const arbuf = await imagine(text);
+	const arbuf = await imagine(text, negative || "");
 	const buf = Buffer.from(arbuf);
 	await i.editReply({
 		files: [{ attachment: buf, name: "imagine.png" }],

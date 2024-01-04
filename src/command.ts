@@ -34,5 +34,8 @@ export const commands = [
 		.setDescription("音楽を生成します")
 		.addStringOption((x) =>
 			x.setName("text").setDescription("テキスト").setRequired(true),
+		)
+		.addStringOption((x) =>
+			x.setName("negative").setDescription("ネガティブ").setRequired(false),
 		),
 ];
