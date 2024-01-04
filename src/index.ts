@@ -1,4 +1,10 @@
-import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
+import {
+	ActivityType,
+	Client,
+	Events,
+	GatewayIntentBits,
+	Routes,
+} from "discord.js";
 import { evar } from "./var";
 import { pushQueue } from "./queue";
 import { onInetraction } from "./i";
@@ -33,8 +39,15 @@ client.once(Events.ClientReady, async () => {
 			});
 		}, 1000 * 60);
 	}
-	await client.application!.commands.set([]);
-	await client.application!.commands.set(commands);
+	const cmds = await client.application?.commands.fetch();
+	if (cmds) {
+		for (const command of cmds.values()) {
+			await client.application?.commands.delete(command.id);
+		}
+	}
+	for (const command of commands) {
+		await client.application?.commands.create(command);
+	}
 });
 
 client.on(Events.MessageCreate, async (message) => {
