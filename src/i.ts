@@ -8,6 +8,7 @@ import {
 import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
 import { imagine } from "./imagine";
+import { music } from "./music";
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {
@@ -26,6 +27,9 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 				break;
 			case "imagine":
 				await imagineCommand(i);
+				break;
+			case "music":
+				await musicCommand(i);
 				break;
 			default:
 				await i.reply("不明なコマンドです");
@@ -124,5 +128,15 @@ async function imagineCommand(i: ChatInputCommandInteraction) {
 	const buf = Buffer.from(arbuf);
 	await i.editReply({
 		files: [{ attachment: buf, name: "imagine.png" }],
+	});
+}
+
+async function musicCommand(i: ChatInputCommandInteraction) {
+	const text = i.options.getString("text", true);
+	await i.deferReply();
+	const arbuf = await music(text);
+	const buf = Buffer.from(arbuf);
+	await i.editReply({
+		files: [{ attachment: buf, name: "music.wav" }],
 	});
 }

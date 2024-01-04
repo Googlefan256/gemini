@@ -29,4 +29,10 @@ export const commands = [
 		.addStringOption((x) =>
 			x.setName("text").setDescription("テキスト").setRequired(true),
 		),
+	new SlashCommandBuilder()
+		.setName("music")
+		.setDescription("音楽を生成します")
+		.addStringOption((x) =>
+			x.setName("text").setDescription("テキスト").setRequired(true),
+		),
 ];
