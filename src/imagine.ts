@@ -7,7 +7,7 @@ export const imagine = async (text: string, negative: string) => {
 			text,
 		)}&negative=${encodeURIComponent(negative)}`,
 		{
-			bodyTimeout: 10000,
+			bodyTimeout: 100000,
 		},
 	);
 	return res.body.arrayBuffer();
