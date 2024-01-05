@@ -124,8 +124,10 @@ async function askCommand(i: ChatInputCommandInteraction) {
 async function imagineCommand(i: ChatInputCommandInteraction) {
 	const text = i.options.getString("text", true);
 	const negative = i.options.getString("negative", false);
+	const size = i.options.getInteger("size", false);
+	const count = i.options.getInteger("count", false);
 	await i.deferReply();
-	const arbuf = await imagine(text, negative || "");
+	const arbuf = await imagine(text, negative || "", size || 512, count || 1);
 	const buf = Buffer.from(arbuf);
 	await i.editReply({
 		files: [{ attachment: buf, name: "imagine.png" }],

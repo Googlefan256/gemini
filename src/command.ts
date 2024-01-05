@@ -31,6 +31,23 @@ export const commands = [
 		)
 		.addStringOption((x) =>
 			x.setName("negative").setDescription("ネガティブ").setRequired(false),
+		)
+		.addIntegerOption((x) =>
+			x
+				.setName("size")
+				.setDescription("サイズ")
+				.setRequired(false)
+				.setMinValue(1)
+				.setMaxValue(1024),
+		)
+		.addIntegerOption((x) =>
+			x
+				.setName("count")
+				.setDescription("数")
+				.setRequired(false)
+				.setChoices(
+					...[1, 4, 9].map((x) => ({ name: x.toString(), value: x })),
+				),
 		),
 	new SlashCommandBuilder()
 		.setName("music")
