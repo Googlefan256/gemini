@@ -55,4 +55,13 @@ export const commands = [
 		.addStringOption((x) =>
 			x.setName("text").setDescription("テキスト").setRequired(true),
 		),
+	new SlashCommandBuilder()
+		.setName("translate")
+		.setDescription("翻訳します")
+		.addStringOption((x) =>
+			x.setName("text").setDescription("テキスト").setRequired(true),
+		)
+		.addStringOption((x) =>
+			x.setName("target").setDescription("翻訳先").setRequired(true),
+		),
 ];

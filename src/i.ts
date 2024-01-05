@@ -9,6 +9,7 @@ import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
 import { imagine } from "./imagine";
 import { music } from "./music";
+import { translate } from "./translate";
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {
@@ -30,6 +31,9 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 				break;
 			case "music":
 				await musicCommand(i);
+				break;
+			case "translate":
+				await translateCommand(i);
 				break;
 			default:
 				await i.reply("不明なコマンドです");
@@ -142,4 +146,12 @@ async function musicCommand(i: ChatInputCommandInteraction) {
 	await i.editReply({
 		files: [{ attachment: buf, name: "music.wav" }],
 	});
+}
+
+async function translateCommand(i: ChatInputCommandInteraction) {
+	const text = i.options.getString("text", true);
+	const target = i.options.getString("target", true);
+	await i.deferReply();
+	const res = await translate(text, target);
+	await i.editReply(res);
 }
