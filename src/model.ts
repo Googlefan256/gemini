@@ -11,30 +11,6 @@ export const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 export const visionModel = genAI.getGenerativeModel({
 	model: "gemini-pro-vision",
 });
-const safetySettings = [
-	HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-	HarmCategory.HARM_CATEGORY_HARASSMENT,
-	HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-	HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-	HarmCategory.HARM_CATEGORY_UNSPECIFIED,
-].map((category) => ({
-	category,
-	threshold: HarmBlockThreshold.BLOCK_NONE,
-}));
-export const modelZero = genAI.getGenerativeModel({
-	model: "gemini-pro",
-	safetySettings,
-	generationConfig: {
-		temperature: 0,
-	},
-});
-export const visionModelZero = genAI.getGenerativeModel({
-	model: "gemini-pro-vision",
-	safetySettings,
-	generationConfig: {
-		temperature: 0,
-	},
-});
 
 export async function resolveImages(
 	attachments: { mime: string; url: string }[],

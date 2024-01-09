@@ -1,12 +1,6 @@
 import { ChatSession } from "@google/generative-ai";
 import { Collection, Message } from "discord.js";
-import {
-	model,
-	modelZero,
-	resolveImages,
-	visionModel,
-	visionModelZero,
-} from "./model";
+import { model, resolveImages, visionModel } from "./model";
 
 const geminiQueues = new Collection<
 	string,
@@ -20,10 +14,10 @@ const geminiQueues = new Collection<
 	}
 >();
 
-export function resetChat(channelId: string, unsafe: boolean) {
+export function resetChat(channelId: string) {
 	if (geminiQueues.has(channelId)) {
 		const q = geminiQueues.get(channelId)!;
-		q.chat = unsafe ? modelZero.startChat() : model.startChat();
+		q.chat = model.startChat();
 		geminiQueues.set(channelId, q);
 	}
 }
@@ -32,11 +26,10 @@ export async function pushQueue(
 	message: Message<true>,
 	text: string,
 	attachments: { mime: string; url: string }[],
-	unsafe: boolean,
 ) {
 	if (!geminiQueues.has(message.channelId)) {
 		geminiQueues.set(message.channelId, {
-			chat: unsafe ? modelZero.startChat() : model.startChat(),
+			chat: model.startChat(),
 			messages: [],
 		});
 	}
@@ -50,9 +43,7 @@ export async function pushQueue(
 		const { text, message, attachments } = geminiQueue.shift()!;
 		let chatFn = chat.sendMessageStream.bind(chat);
 		if (attachments.length) {
-			chatFn = unsafe
-				? visionModelZero.generateContentStream.bind(visionModelZero)
-				: visionModel.generateContentStream.bind(visionModel);
+			chatFn = visionModel.generateContentStream.bind(visionModel);
 		}
 		try {
 			const images = await resolveImages(attachments);

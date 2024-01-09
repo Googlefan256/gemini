@@ -87,7 +87,7 @@ async function clearCommand(i: ChatInputCommandInteraction) {
 		);
 		return;
 	}
-	resetChat(i.channelId, i.channel.topic?.includes("unsafe") || false);
+	resetChat(i.channelId);
 	await i.reply("チャットをリセットしました。");
 }
 
