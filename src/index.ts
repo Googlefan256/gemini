@@ -1,6 +1,6 @@
 import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import { evar } from "./var";
-import { pushQueue } from "./queue";
+import { filterSystemPrompt, pushQueue } from "./queue";
 import { onInetraction } from "./i";
 import { commands } from "./command";
 
@@ -53,6 +53,7 @@ client.on(Events.MessageCreate, async (message) => {
 		message.attachments
 			.filter((x) => x.height)
 			.map((x) => ({ url: x.url, mime: x.contentType || "image/png" })),
+		filterSystemPrompt(message.channel.topic),
 	);
 });
 

@@ -1,8 +1,4 @@
-import {
-	GoogleGenerativeAI,
-	HarmBlockThreshold,
-	HarmCategory,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { evar } from "./var";
 import { request } from "undici";
 

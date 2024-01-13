@@ -5,7 +5,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from "discord.js";
-import { resetChat } from "./queue";
+import { filterSystemPrompt, resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
 import { imagine } from "./imagine";
 import { music } from "./music";
@@ -87,7 +87,7 @@ async function clearCommand(i: ChatInputCommandInteraction) {
 		);
 		return;
 	}
-	resetChat(i.channelId);
+	resetChat(i.channelId, filterSystemPrompt(i.channel.topic));
 	await i.reply("チャットをリセットしました。");
 }
 
