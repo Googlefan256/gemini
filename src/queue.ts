@@ -27,7 +27,7 @@ function startChat(message?: string) {
 			? [
 					{
 						parts: message,
-						role: "assistant",
+						role: "user",
 					},
 			  ]
 			: undefined,
