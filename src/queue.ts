@@ -29,6 +29,10 @@ function startChat(message?: string) {
 						parts: message,
 						role: "user",
 					},
+					{
+						parts: "I understand.",
+						role: "model",
+					}
 			  ]
 			: undefined,
 	});
