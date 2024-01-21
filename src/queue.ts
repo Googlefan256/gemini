@@ -32,7 +32,7 @@ function startChat(message?: string) {
 					{
 						parts: "I understand.",
 						role: "model",
-					}
+					},
 			  ]
 			: undefined,
 	});
@@ -64,10 +64,11 @@ export async function pushQueue(
 		return;
 	}
 	geminiQueue.push({ text, message, attachments });
+	let vision = attachments.length
 	while (geminiQueue.length) {
 		const { text, message, attachments } = geminiQueue.shift()!;
 		let chatFn = chat.sendMessageStream.bind(chat);
-		if (attachments.length) {
+		if (vision) {
 			chatFn = visionModel.generateContentStream.bind(visionModel);
 		}
 		try {
@@ -94,24 +95,24 @@ export async function pushQueue(
 				continue;
 			}
 		} catch (err: any) {
-			if (err.toString().includes("SAFETY")) {
-				await message.reply("規制対象です。");
-				continue;
-			}
-			if (err.toString().includes("OTHER")) {
-				await message.reply("その他の理由により返信できません");
-				continue;
-			}
-			if (err.toString().includes("BLOCKED_REASON_UNSPECIFIED")) {
-				await message.reply("不明な理由によりブロックされました");
-				continue;
-			}
-			if (err.toString().includes("RECITATION")) {
-				await message.reply("朗読を検知しました???");
-				continue;
-			}
-			console.error(err);
 			try {
+				if (err.toString().includes("SAFETY")) {
+					await message.reply("規制対象です。");
+					continue;
+				}
+				if (err.toString().includes("OTHER")) {
+					await message.reply("その他の理由により返信できません");
+					continue;
+				}
+				if (err.toString().includes("BLOCKED_REASON_UNSPECIFIED")) {
+					await message.reply("不明な理由によりブロックされました");
+					continue;
+				}
+				if (err.toString().includes("RECITATION")) {
+					await message.reply("朗読を検知しました???");
+					continue;
+				}
+				console.error(err);
 				await message.reply("その他のエラーが発生しました");
 			} catch {}
 		}
