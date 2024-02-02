@@ -6,44 +6,78 @@ const endpoint = evar("LLAMA_CPP_ENDPOINT");
 const SYSTEM_PROMPT =
 	"これはユーザーと親切で協力的で正確なアシスタントの間の会話です。";
 
+async function req(prompt: string): Promise<string> {
+	const res = await fetch(endpoint, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			stream: false,
+			n_predict: 400,
+			temperature: 0.7,
+			stop: ["</s>", "Bot:", "User:"],
+			repeat_last_n: 256,
+			repeat_penalty: 1.18,
+			top_k: 40,
+			top_p: 0.95,
+			tfs_z: 1,
+			typical_p: 1,
+			presence_penalty: 0,
+			frequency_penalty: 0,
+			mirostat: 0,
+			mirostat_tau: 5,
+			mirostat_eta: 0.1,
+			grammar: "",
+			n_probs: 0,
+			image_data: [],
+			cache_prompt: true,
+			api_key: "",
+			slot_id: 0,
+			prompt: `${SYSTEM_PROMPT}\n\n${prompt}`,
+		}),
+	});
+	const data = await res.json();
+	return data.content;
+}
+
+const reqQueue: {
+	prompt: string;
+	callback: (data: string) => void;
+}[] = [];
+
+async function reqWithQueue(prompt: string) {
+	return new Promise<string>((resolve, reject) => {
+		reqQueue.push({
+			prompt,
+			callback: (data) => {
+				resolve(data);
+			},
+		});
+		if (reqQueue.length === 1) {
+			(async () => {
+				while (reqQueue.length) {
+					const { prompt, callback } = reqQueue[0];
+					const data = await req(prompt);
+					callback(data);
+					reqQueue.shift();
+				}
+			})();
+		}
+	});
+}
+
 export class LLamaCppChat {
 	history: { user: string; message: string }[] = [];
 	constructor() {}
 	async chat(message: string): Promise<string> {
 		this.history.push({ user: "user", message });
 		try {
-			const res = await fetch(endpoint, {
-				method: "POST",
-				body: JSON.stringify({
-					stream: false,
-					n_predict: 400,
-					temperature: 0.7,
-					stop: ["</s>", "Bot:", "User:"],
-					repeat_last_n: 256,
-					repeat_penalty: 1.18,
-					top_k: 40,
-					top_p: 0.95,
-					tfs_z: 1,
-					typical_p: 1,
-					presence_penalty: 0,
-					frequency_penalty: 0,
-					mirostat: 0,
-					mirostat_tau: 5,
-					mirostat_eta: 0.1,
-					grammar: "",
-					n_probs: 0,
-					image_data: [],
-					cache_prompt: true,
-					api_key: "",
-					slot_id: 0,
-					prompt: `${SYSTEM_PROMPT}\n\n${this.historyText()}`,
-				}),
-			});
-			const data = await res.json();
-			this.history.push({ user: "bot", message: data.content });
-			return data.content;
-		} catch (e) {
-			return "エラーが発生しました";
+			const data = await reqWithQueue(this.historyText());
+			this.history.push({ user: "bot", message: data });
+			return data;
+		} catch (e: any) {
+			return `エラーが発生しました: ${e.toString()}`;
 		}
 	}
 	historyText() {
