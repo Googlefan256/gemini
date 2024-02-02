@@ -65,20 +65,21 @@ export function resetLLamaCppChat(channelId: string) {
 }
 
 export async function pushLLamaCppQueue(
-	channelId: string,
+	content: string,
 	message: Message<true>,
 ) {
-	if (!llamaCppQueues.has(channelId)) {
-		llamaCppQueues.set(channelId, {
+	if (!llamaCppQueues.has(message.channelId)) {
+		llamaCppQueues.set(message.channelId, {
 			chat: new LLamaCppChat(),
 			queue: [],
 		});
 	}
-	const { chat, queue } = llamaCppQueues.get(channelId)!;
+	const { chat, queue } = llamaCppQueues.get(message.channelId)!;
 	if (queue.length !== 0) {
-		queue.push({ text: message.content, message });
+		queue.push({ text: content, message });
 		return;
 	}
+	queue.push({ text: content, message });
 	while (queue.length) {
 		const { text, message } = queue.shift()!;
 		const msg = await message.reply("ラマは思考しています...");
