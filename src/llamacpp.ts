@@ -64,7 +64,10 @@ export class LLamaCppChat {
 		}
 	}
 	historyText() {
-		return this.history.map((x) => `${x.user}: ${x.message}`).join("\n\n");
+		return (
+			this.history.map((x) => `${x.user}: ${x.message}`).join("\n\n") +
+			"\n\nbot:"
+		);
 	}
 }
 
