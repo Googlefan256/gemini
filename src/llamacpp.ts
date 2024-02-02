@@ -81,18 +81,19 @@ export async function pushLLamaCppQueue(
 	}
 	while (queue.length) {
 		const { text, message } = queue.shift()!;
+		const msg = await message.reply("ラマは思考しています...");
 		const resText = await chat.chat(text);
 		if (resText.length == 0) {
-			await message.reply("AIからの返信がありませんでした");
+			await msg.edit("ラマは疲れているようです...");
 			continue;
 		}
-		if (resText.length > 2000) {
-			await message.reply({
-				content: "長文です",
+		if (resText.length > 1900) {
+			await msg.edit({
+				content: "熟考しすぎてしまったようです",
 				files: [{ attachment: Buffer.from(resText), name: "reply.txt" }],
 			});
 			continue;
 		}
-		await message.reply(resText);
+		await msg.edit(`ラマは元気に返事をしてくれました！\n${resText}`);
 	}
 }

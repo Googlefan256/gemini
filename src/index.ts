@@ -3,6 +3,7 @@ import { evar } from "./var";
 import { pushQueue } from "./queue";
 import { onInetraction } from "./i";
 import { commands } from "./command";
+import { pushLLamaCppQueue } from "./llamacpp";
 
 const client = new Client({
 	intents:
@@ -48,6 +49,7 @@ client.on(Events.MessageCreate, async (message) => {
 	const content = message.content.trim();
 	if (content.startsWith("#")) return;
 	if (message.channel.topic?.includes("unlimited")) {
+		await pushLLamaCppQueue(content, message);
 	} else {
 		await pushQueue(
 			message,
