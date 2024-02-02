@@ -1,6 +1,6 @@
 import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import { evar } from "./var";
-import { filterSystemPrompt, pushQueue } from "./queue";
+import { pushQueue } from "./queue";
 import { onInetraction } from "./i";
 import { commands } from "./command";
 
@@ -47,14 +47,16 @@ client.on(Events.MessageCreate, async (message) => {
 	if (!message.channel.topic?.includes("aichat")) return;
 	const content = message.content.trim();
 	if (content.startsWith("#")) return;
-	await pushQueue(
-		message,
-		content,
-		message.attachments
-			.filter((x) => x.height)
-			.map((x) => ({ url: x.url, mime: x.contentType || "image/png" })),
-		filterSystemPrompt(message.channel.topic),
-	);
+	if (message.channel.topic?.includes("unlimited")) {
+	} else {
+		await pushQueue(
+			message,
+			content,
+			message.attachments
+				.filter((x) => x.height)
+				.map((x) => ({ url: x.url, mime: x.contentType || "image/png" })),
+		);
+	}
 });
 
 client.on(Events.InteractionCreate, async (i) => {

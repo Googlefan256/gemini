@@ -2,13 +2,6 @@ import { ChatSession } from "@google/generative-ai";
 import { Collection, Message } from "discord.js";
 import { model, resolveImages, visionModel } from "./model";
 
-export function filterSystemPrompt(topic?: string) {
-	if (!topic) return undefined;
-	const match = topic.match(/sp=(.+)/);
-	if (!match) return undefined;
-	return match[1];
-}
-
 const geminiQueues = new Collection<
 	string,
 	{
@@ -21,27 +14,14 @@ const geminiQueues = new Collection<
 	}
 >();
 
-function startChat(message?: string) {
-	return model.startChat({
-		history: message
-			? [
-					{
-						parts: message,
-						role: "user",
-					},
-					{
-						parts: "I understand.",
-						role: "model",
-					},
-			  ]
-			: undefined,
-	});
+function startChat() {
+	return model.startChat();
 }
 
-export function resetChat(channelId: string, systemPrompt?: string) {
+export function resetChat(channelId: string) {
 	if (geminiQueues.has(channelId)) {
 		const q = geminiQueues.get(channelId)!;
-		q.chat = startChat(systemPrompt);
+		q.chat = startChat();
 		geminiQueues.set(channelId, q);
 	}
 }
@@ -50,11 +30,10 @@ export async function pushQueue(
 	message: Message<true>,
 	text: string,
 	attachments: { mime: string; url: string }[],
-	systemPrompt?: string,
 ) {
 	if (!geminiQueues.has(message.channelId)) {
 		geminiQueues.set(message.channelId, {
-			chat: startChat(systemPrompt),
+			chat: startChat(),
 			messages: [],
 		});
 	}
@@ -64,7 +43,7 @@ export async function pushQueue(
 		return;
 	}
 	geminiQueue.push({ text, message, attachments });
-	let vision = attachments.length
+	let vision = attachments.length;
 	while (geminiQueue.length) {
 		const { text, message, attachments } = geminiQueue.shift()!;
 		let chatFn = chat.sendMessageStream.bind(chat);

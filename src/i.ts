@@ -5,11 +5,9 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 } from "discord.js";
-import { filterSystemPrompt, resetChat } from "./queue";
+import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
-import { imagine } from "./imagine";
-import { music } from "./music";
-import { translate } from "./translate";
+import { LLamaCppChat, resetLLamaCppChat } from "./llamacpp";
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {
@@ -25,15 +23,6 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 				break;
 			case "ask":
 				await askCommand(i);
-				break;
-			case "imagine":
-				await imagineCommand(i);
-				break;
-			case "music":
-				await musicCommand(i);
-				break;
-			case "translate":
-				await translateCommand(i);
 				break;
 			default:
 				await i.reply("不明なコマンドです");
@@ -87,7 +76,11 @@ async function clearCommand(i: ChatInputCommandInteraction) {
 		);
 		return;
 	}
-	resetChat(i.channelId, filterSystemPrompt(i.channel.topic));
+	if (i.channel.topic?.includes("unlimited")) {
+		resetLLamaCppChat(i.channelId);
+	} else {
+		resetChat(i.channelId);
+	}
 	await i.reply("チャットをリセットしました。");
 }
 
@@ -95,22 +88,29 @@ async function askCommand(i: ChatInputCommandInteraction) {
 	const question = i.options.getString("text", true);
 	const attachment = i.options.getAttachment("attachment", false);
 	const ephemeral = i.options.getBoolean("ephemeral", false) ?? false;
-	let chatFn = model.generateContent.bind(model);
-	if (attachment) {
-		chatFn = visionModel.generateContent.bind(visionModel);
+	const modelName = i.options.getString("model", false) ?? "gemini-pro";
+	let resText = "";
+	if (modelName === "gemini-pro") {
+		let chatFn = model.generateContent.bind(model);
+		if (attachment) {
+			chatFn = visionModel.generateContent.bind(visionModel);
+		}
+		const images = await resolveImages(
+			attachment
+				? [
+						{
+							url: attachment.url,
+							mime: attachment.contentType || "image/png",
+						},
+				  ]
+				: [],
+		);
+		await i.deferReply({ ephemeral });
+		resText = (await chatFn([question, ...images])).response.text();
+	} else if (modelName === "swallow") {
+		await i.deferReply({ ephemeral });
+		resText = await new LLamaCppChat().chat(question);
 	}
-	const images = await resolveImages(
-		attachment
-			? [
-					{
-						url: attachment.url,
-						mime: attachment.contentType || "image/png",
-					},
-			  ]
-			: [],
-	);
-	await i.deferReply({ ephemeral });
-	const resText = (await chatFn([question, ...images])).response.text();
 	if (resText.length == 0) {
 		await i.editReply("AIからの返信がありませんでした");
 		return;
@@ -123,35 +123,4 @@ async function askCommand(i: ChatInputCommandInteraction) {
 		return;
 	}
 	await i.editReply(resText);
-}
-
-async function imagineCommand(i: ChatInputCommandInteraction) {
-	const text = i.options.getString("text", true);
-	const negative = i.options.getString("negative", false);
-	const size = i.options.getInteger("size", false);
-	const count = i.options.getInteger("count", false);
-	await i.deferReply();
-	const arbuf = await imagine(text, negative || "", size || 512, count || 1);
-	const buf = Buffer.from(arbuf);
-	await i.editReply({
-		files: [{ attachment: buf, name: "imagine.png" }],
-	});
-}
-
-async function musicCommand(i: ChatInputCommandInteraction) {
-	const text = i.options.getString("text", true);
-	await i.deferReply();
-	const arbuf = await music(text);
-	const buf = Buffer.from(arbuf);
-	await i.editReply({
-		files: [{ attachment: buf, name: "music.wav" }],
-	});
-}
-
-async function translateCommand(i: ChatInputCommandInteraction) {
-	const text = i.options.getString("text", true);
-	const target = i.options.getString("target", true);
-	await i.deferReply();
-	const res = await translate(text, target);
-	await i.editReply(res);
 }
