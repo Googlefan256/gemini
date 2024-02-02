@@ -4,7 +4,7 @@ import { evar } from "./var";
 const endpoint = evar("LLAMA_CPP_ENDPOINT");
 
 const SYSTEM_PROMPT =
-	"これはユーザーと親切で協力的で正確なアシスタントの間の会話です。";
+	"これはユーザー(user:)と親切で協力的で正確なアシスタント(bot:)の間の会話です。";
 
 async function req(prompt: string): Promise<string> {
 	const res = await fetch(endpoint, {
@@ -15,7 +15,7 @@ async function req(prompt: string): Promise<string> {
 		body: JSON.stringify({
 			stream: false,
 			n_predict: 400,
-			stop: ["</s>", "Bot:", "User:"],
+			stop: ["</s>", "bot:", "user:", "assistant:"],
 			cache_prompt: true,
 			prompt: `${SYSTEM_PROMPT}\n\n${prompt}`,
 		}),
