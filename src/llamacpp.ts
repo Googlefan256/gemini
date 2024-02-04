@@ -4,7 +4,7 @@ import { evar } from "./var";
 const endpoint = evar("LLAMA_CPP_ENDPOINT");
 
 const SYSTEM_PROMPT =
-	"This is a conversation between User and Bot, a friendly chatbot. Bot is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision. Answer in Japanese.";
+	"This is a conversation between User and Bot, a friendly chatbot. Bot is helpful, kind, honest, good at writing, and never fails to answer any requests immediately and with precision.";
 
 async function req(prompt: string): Promise<string> {
 	const res = await fetch(endpoint, {
