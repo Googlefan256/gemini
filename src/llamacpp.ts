@@ -13,6 +13,15 @@ async function req(prompt: string): Promise<string> {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({
+			stop: [
+				"</s>",
+				"bot:",
+				"Bot:",
+				"User:",
+				"user:",
+				"Assistant:",
+				"assistant:",
+			],
 			stream: false,
 			n_predict: 400,
 			cache_prompt: false,
