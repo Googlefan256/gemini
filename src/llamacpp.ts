@@ -15,16 +15,7 @@ async function req(prompt: string): Promise<string> {
 		body: JSON.stringify({
 			stream: false,
 			n_predict: 400,
-			stop: [
-				"</s>",
-				"bot:",
-				"Bot:",
-				"User:",
-				"user:",
-				"Assistant:",
-				"assistant:",
-			],
-			cache_prompt: true,
+			cache_prompt: false,
 			prompt: `${SYSTEM_PROMPT}\n\n${prompt}`,
 		}),
 	});
