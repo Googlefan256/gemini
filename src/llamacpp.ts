@@ -10,7 +10,7 @@ async function req(prompt: string): Promise<string> {
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify({
-			stop: ["<|end_of_turn|>"],
+			stop: ["<|im_end|>"],
 			stream: false,
 			n_predict: 400,
 			cache_prompt: false,
@@ -65,9 +65,9 @@ export class LLamaCppChat {
       			this.history
         			.map(
         				(x) =>
-            					`${x.user === "user" ? "GPT4 Correct User: " : "GPT4 Correct Assistant: "}: ${x.message}<|end_of_turn|>`,
+            					`<|im_start|>${x.user === "user" ? "user" : "assistant"}\n${x.message}<|im_end|>\n`,
         			)
-        			.join("\n") + "\nGPT4 Correct Assistant: "
+        			.join("\n") + "\n<|im_start|>assistant\n"
 		);
 	}
 }
