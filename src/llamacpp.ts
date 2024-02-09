@@ -3,30 +3,29 @@ import { evar } from "./var";
 
 const endpoint = evar("LLAMA_CPP_ENDPOINT");
 
-async function req(prompt: string): Promise<string> {
+async function req(
+	prompt: {
+		role: string;
+		content: string;
+	}[],
+): Promise<string> {
 	const res = await fetch(endpoint, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify({
-			stop: ["<|end_of_turn|>"],
-			stream: false,
-			n_predict: 400,
-			cache_prompt: false,
-			prompt,
-		}),
+		body: JSON.stringify(prompt),
 	});
 	const data = await res.json();
 	return data.content;
 }
 
 const reqQueue: {
-	prompt: string;
+	prompt: { role: string; content: string }[];
 	callback: (data: string) => void;
 }[] = [];
 
-async function reqWithQueue(prompt: string) {
+async function reqWithQueue(prompt: { role: string; content: string }[]) {
 	return new Promise<string>((resolve, reject) => {
 		reqQueue.push({
 			prompt,
@@ -53,24 +52,17 @@ export class LLamaCppChat {
 	async chat(message: string): Promise<string> {
 		this.history.push({ user: "user", message });
 		try {
-			const data = await reqWithQueue(this.historyText());
+			const data = await reqWithQueue(
+				this.history.map((x) => ({
+					role: x.user === "user" ? "user" : "assistant",
+					content: x.message,
+				})),
+			);
 			this.history.push({ user: "bot", message: data });
 			return data;
 		} catch (e: any) {
 			return `エラーが発生しました: ${e.toString()}`;
 		}
-	}
-	historyText() {
-		return (
-			this.history
-				.map(
-					(x) =>
-						`${
-							x.user === "user" ? "GPT4 Correct User" : "GPT4 Correct Assistant"
-						}: ${x.message}`,
-				)
-				.join("<|end_of_turn|>") + "<|end_of_turn|>GPT4 Correct Assistant: "
-		);
 	}
 }
 
