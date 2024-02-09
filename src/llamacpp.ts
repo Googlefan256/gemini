@@ -4,19 +4,7 @@ import { evar } from "./var";
 const endpoint = evar("LLAMA_CPP_ENDPOINT");
 
 async function req(prompt: string): Promise<string> {
-	const res = await fetch(endpoint, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			stop: ["<|end_of_turn|>"],
-			stream: false,
-			n_predict: 400,
-			cache_prompt: false,
-			prompt,
-		}),
-	});
+	const res = await fetch(`${endpoint}?prompt=${encodeURIComponent(prompt)}`)
 	const data = await res.json();
 	return data.content;
 }
