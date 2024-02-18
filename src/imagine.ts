@@ -27,8 +27,10 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 				"Content-Type": "application/json",
 			},
 		});
+		const seed = res.headers.get("Seed") ?? "Unknown";
 		const data = await res.arrayBuffer();
 		await i.editReply({
+			content: `Seed: ${seed}`,
 			files: [
 				{
 					attachment: Buffer.from(data),
