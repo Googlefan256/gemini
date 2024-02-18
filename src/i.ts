@@ -8,6 +8,7 @@ import {
 import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
 import { LLamaCppChat, resetLLamaCppChat } from "./llamacpp";
+import { imagineCommand } from "./imagine";
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {
@@ -23,6 +24,9 @@ export async function onInetraction(i: ChatInputCommandInteraction) {
 				break;
 			case "ask":
 				await askCommand(i);
+				break;
+			case "imagine":
+				await imagineCommand(i);
 				break;
 			default:
 				await i.reply("不明なコマンドです");

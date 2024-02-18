@@ -33,4 +33,35 @@ export const commands = [
 				.setDescription("あなたにしか見えなくします")
 				.setRequired(false),
 		),
+	new SlashCommandBuilder()
+		.setName("imagine")
+		.setDescription("画像を生成します")
+		.addIntegerOption((x) =>
+			x
+				.setName("count")
+				.setDescription("生成する画像の数")
+				.setRequired(false)
+				.setMaxValue(16)
+				.setMinValue(1),
+		)
+		.addStringOption((x) =>
+			x
+				.setName("positive")
+				.setDescription("生成する画像の内容")
+				.setRequired(true),
+		)
+		.addStringOption((x) =>
+			x
+				.setName("negative")
+				.setDescription("生成しない画像の内容")
+				.setRequired(false),
+		)
+		.addIntegerOption((x) =>
+			x
+				.setName("size")
+				.setDescription("生成する画像のサイズ")
+				.setRequired(false)
+				.setMinValue(64)
+				.setMaxValue(4096),
+		),
 ];
