@@ -19,7 +19,6 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	try {
 		await i.deferReply();
 		const res = await fetch(`${endpoint}/?${params.toString()}`, {
-			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},
