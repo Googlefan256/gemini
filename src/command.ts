@@ -63,5 +63,11 @@ export const commands = [
 				.setRequired(false)
 				.setMinValue(64)
 				.setMaxValue(4096),
+		)
+		.addIntegerOption((x) =>
+			x
+				.setName("seed")
+				.setDescription("生成する画像のシード")
+				.setRequired(false),
 		),
 ];

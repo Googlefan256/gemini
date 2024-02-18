@@ -8,6 +8,7 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	const pos = i.options.getString("positive", true);
 	const neg = i.options.getString("negative") || undefined;
 	const size = i.options.getInteger("size") ?? 1024;
+	const seed = i.options.getInteger("seed") || undefined;
 	const params = new URLSearchParams({
 		count: count.toString(),
 		pos,
@@ -15,6 +16,9 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	});
 	if (neg) {
 		params.append("neg", neg);
+	}
+	if (seed) {
+		params.append("seed", seed.toString());
 	}
 	try {
 		await i.deferReply();
