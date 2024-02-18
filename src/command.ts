@@ -36,6 +36,12 @@ export const commands = [
 	new SlashCommandBuilder()
 		.setName("imagine")
 		.setDescription("画像を生成します")
+		.addStringOption((x) =>
+			x
+				.setName("positive")
+				.setDescription("生成する画像の内容")
+				.setRequired(true),
+		)
 		.addIntegerOption((x) =>
 			x
 				.setName("count")
@@ -43,12 +49,6 @@ export const commands = [
 				.setRequired(false)
 				.setMaxValue(16)
 				.setMinValue(1),
-		)
-		.addStringOption((x) =>
-			x
-				.setName("positive")
-				.setDescription("生成する画像の内容")
-				.setRequired(true),
 		)
 		.addStringOption((x) =>
 			x
