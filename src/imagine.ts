@@ -81,12 +81,16 @@ export async function editButtonPress(i: ButtonInteraction) {
 					.setLabel("ポジティブプロンプト")
 					.setStyle(TextInputStyle.Paragraph)
 					.setRequired(true),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setPlaceholder("ネガティブプロンプト")
 					.setLabel("ネガティブプロンプト")
 					.setCustomId("neg")
 					.setStyle(TextInputStyle.Paragraph)
 					.setRequired(false),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setPlaceholder("サイズ")
 					.setLabel("サイズ")
@@ -95,6 +99,8 @@ export async function editButtonPress(i: ButtonInteraction) {
 					.setMinLength(1)
 					.setStyle(TextInputStyle.Short)
 					.setRequired(false),
+			),
+			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
 					.setPlaceholder("シード")
 					.setLabel("シード")
