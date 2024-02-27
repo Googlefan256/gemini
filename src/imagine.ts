@@ -78,15 +78,18 @@ export async function editButtonPress(i: ButtonInteraction) {
 				new TextInputBuilder()
 					.setPlaceholder("プロンプト")
 					.setCustomId("pos")
+					.setLabel("ポジティブプロンプト")
 					.setStyle(TextInputStyle.Paragraph)
 					.setRequired(true),
 				new TextInputBuilder()
 					.setPlaceholder("ネガティブプロンプト")
+					.setLabel("ネガティブプロンプト")
 					.setCustomId("neg")
 					.setStyle(TextInputStyle.Paragraph)
 					.setRequired(false),
 				new TextInputBuilder()
 					.setPlaceholder("サイズ")
+					.setLabel("サイズ")
 					.setCustomId("size")
 					.setMaxLength(4)
 					.setMinLength(1)
@@ -94,6 +97,7 @@ export async function editButtonPress(i: ButtonInteraction) {
 					.setRequired(false),
 				new TextInputBuilder()
 					.setPlaceholder("シード")
+					.setLabel("シード")
 					.setCustomId("seed")
 					.setMaxLength(8)
 					.setMinLength(1)
