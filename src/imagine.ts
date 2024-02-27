@@ -151,9 +151,8 @@ export async function editModalSubmit(i: ModalSubmitInteraction) {
 		const body = new FormData();
 		body.append("file", new File([image], "image.png", { type: "image/png" }));
 		const res = await fetch(`${endpoint}/?${params.toString()}`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
+			body,
+			method: "POST",
 		});
 		const seed = res.headers.get("Seed") ?? "Unknown";
 		const data = await res.arrayBuffer();
