@@ -19,6 +19,7 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	const neg = i.options.getString("negative") || undefined;
 	const size = i.options.getInteger("size") ?? 1024;
 	const seed = i.options.getInteger("seed") || undefined;
+	const base = i.options.getAttachment("base")?.url;
 	const params = new URLSearchParams({
 		count: count.toString(),
 		pos,
@@ -32,10 +33,18 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	}
 	try {
 		await i.deferReply();
+		const image = base
+			? await fetch(base).then((res) => res.blob())
+			: undefined;
+		const body = new FormData();
+		if (image)
+			body.append(
+				"file",
+				new File([image], "image.png", { type: "image/png" }),
+			);
 		const res = await fetch(`${endpoint}/?${params.toString()}`, {
-			headers: {
-				"Content-Type": "application/json",
-			},
+			body: image ? body : undefined,
+			method: image ? "POST" : "GET",
 		});
 		const seed = res.headers.get("Seed") ?? "Unknown";
 		const data = await res.arrayBuffer();

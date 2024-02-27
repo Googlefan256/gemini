@@ -69,5 +69,8 @@ export const commands = [
 				.setName("seed")
 				.setDescription("生成する画像のシード")
 				.setRequired(false),
+		)
+		.addAttachmentOption((x) =>
+			x.setName("base").setDescription("ベース画像").setRequired(false),
 		),
 ];
