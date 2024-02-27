@@ -72,6 +72,7 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 export async function editButtonPress(i: ButtonInteraction) {
 	const modal = new ModalBuilder()
 		.setTitle("画像を加工")
+		.setCustomId("imagine-edit")
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()
