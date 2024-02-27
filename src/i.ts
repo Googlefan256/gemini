@@ -4,11 +4,25 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
+	ButtonInteraction,
+	ModalSubmitInteraction,
 } from "discord.js";
 import { resetChat } from "./queue";
 import { model, visionModel, resolveImages } from "./model";
 import { LLamaCppChat, resetLLamaCppChat } from "./llamacpp";
-import { imagineCommand } from "./imagine";
+import { imagineCommand, editButtonPress, editModalSubmit } from "./imagine";
+
+export async function onButton(i: ButtonInteraction) {
+	if (i.customId === "imagine-edit") {
+		await editButtonPress(i);
+	}
+}
+
+export async function onModal(i: ModalSubmitInteraction) {
+	if (i.customId === "imagine-edit") {
+		await editModalSubmit(i);
+	}
+}
 
 export async function onInetraction(i: ChatInputCommandInteraction) {
 	try {

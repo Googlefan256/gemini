@@ -7,7 +7,7 @@ import {
 	ModalBuilder,
 	TextInputBuilder,
 	TextInputStyle,
-	ModalMessageModalSubmitInteraction,
+	ModalSubmitInteraction,
 } from "discord.js";
 import { evar } from "./var";
 
@@ -105,7 +105,7 @@ export async function editButtonPress(i: ButtonInteraction) {
 
 const maxSeed = 2 ** 32 - 1;
 
-export async function editModalSubmit(i: ModalMessageModalSubmitInteraction) {
+export async function editModalSubmit(i: ModalSubmitInteraction) {
 	const pos = i.fields.getTextInputValue("pos");
 	const neg = i.fields.getTextInputValue("neg") || undefined;
 	const size = Number(i.fields.getTextInputValue("size") || "1024");
@@ -129,7 +129,7 @@ export async function editModalSubmit(i: ModalMessageModalSubmitInteraction) {
 	if (seed) {
 		params.append("seed", seed.toString());
 	}
-	const imageUrl = i.message.attachments.first()?.url;
+	const imageUrl = i.message?.attachments.first()?.url;
 	if (!imageUrl) {
 		await i.reply("画像が見つかりませんでした");
 		return;

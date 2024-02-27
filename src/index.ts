@@ -1,7 +1,7 @@
 import { ActivityType, Client, Events, GatewayIntentBits } from "discord.js";
 import { evar } from "./var";
 import { pushQueue } from "./queue";
-import { onInetraction } from "./i";
+import { onInetraction, onButton, onModal } from "./i";
 import { commands } from "./command";
 import { pushLLamaCppQueue } from "./llamacpp";
 
@@ -64,6 +64,12 @@ client.on(Events.MessageCreate, async (message) => {
 client.on(Events.InteractionCreate, async (i) => {
 	if (i.isChatInputCommand()) {
 		await onInetraction(i);
+	}
+	if (i.isButton()) {
+		await onButton(i);
+	}
+	if (i.isModalSubmit()) {
+		await onModal(i);
 	}
 });
 
