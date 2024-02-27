@@ -68,3 +68,11 @@ client.on(Events.InteractionCreate, async (i) => {
 });
 
 client.login(evar("DISCORD_TOKEN"));
+
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+	console.error("Uncaught Expection at:", err);
+});
