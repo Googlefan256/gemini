@@ -20,10 +20,16 @@ export async function imagineCommand(i: ChatInputCommandInteraction) {
 	const size = i.options.getInteger("size") ?? 1024;
 	const seed = i.options.getInteger("seed") || undefined;
 	const base = i.options.getAttachment("base")?.url;
+	const fast = i.options.getBoolean("fast") ?? false;
+	if (fast && base) {
+		await i.reply("高速生成はimage to imageモードでは使用できません");
+		return;
+	}
 	const params = new URLSearchParams({
 		count: count.toString(),
 		pos,
 		size: size.toString(),
+		fast: fast.toString(),
 	});
 	if (neg) {
 		params.append("neg", neg);

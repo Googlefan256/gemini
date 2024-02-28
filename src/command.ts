@@ -72,5 +72,11 @@ export const commands = [
 		)
 		.addAttachmentOption((x) =>
 			x.setName("base").setDescription("ベース画像").setRequired(false),
+		)
+		.addBooleanOption((x) =>
+			x
+				.setName("fast")
+				.setDescription("高速画像生成を使用します")
+				.setRequired(false),
 		),
 ];
